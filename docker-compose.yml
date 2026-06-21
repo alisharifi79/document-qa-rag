@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    container_name: document_qa_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./media:/app/media
+      - ./faiss_index:/app/faiss_index
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}

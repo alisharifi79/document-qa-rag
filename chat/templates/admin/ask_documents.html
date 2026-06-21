@@ -1,0 +1,274 @@
+{% extends "admin/base_site.html" %} {% block content %}
+
+<style>
+  .ask-wrapper {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .messagelist {
+    display: none !important;
+  }
+
+  .chat-sidebar {
+    width: 25%;
+    background: #1f2933;
+    border: 1px solid #3a4a55;
+    border-radius: 8px;
+    padding: 16px;
+    color: #f5f5f5;
+  }
+
+  .chat-sidebar h3 {
+    color: #ffffff;
+    margin-top: 16px;
+  }
+
+  .new-chat-btn {
+    display: block;
+    text-align: center;
+    background: #417690;
+    color: #ffffff !important;
+    padding: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .chat-link {
+    display: block;
+    color: #9ddcff !important;
+    padding: 8px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-bottom: 6px;
+    unicode-bidi: plaintext;
+    direction: auto;
+    text-align: start;
+  }
+
+  .chat-link:hover {
+    background: #2d3f4a;
+  }
+
+  .chat-link.active {
+    background: #417690;
+    color: #ffffff !important;
+    font-weight: bold;
+  }
+
+  .chat-main {
+    width: 75%;
+  }
+  .chat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .delete-chat-btn {
+    color: #ff6b6b;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+
+  .delete-chat-btn:hover {
+    background: rgba(255, 107, 107, 0.15);
+  }
+
+  .messages-box {
+    background: #111827;
+    border: 1px solid #3a4a55;
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 360px;
+    color: #f5f5f5;
+  }
+
+  .empty-message {
+    color: #aab7c4;
+  }
+
+  .message {
+    margin-bottom: 20px;
+  }
+
+  .user-message {
+    background: #1e3a5f;
+    padding: 12px;
+    border-radius: 8px;
+    color: #ffffff;
+  }
+
+  .assistant-message {
+    background: #243447;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+    color: #ffffff;
+  }
+
+  .message-content {
+    white-space: pre-wrap;
+    line-height: 1.9;
+    font-size: 15px;
+    word-break: break-word;
+  }
+
+  .rtl-text {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: isolate;
+    font-family: Tahoma, Arial, sans-serif;
+  }
+
+  .ltr-text {
+    direction: ltr;
+    text-align: left;
+    unicode-bidi: isolate;
+    font-family: Arial, sans-serif;
+  }
+
+  .sources {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #4b5563;
+    font-size: 13px;
+    color: #cbd5e1;
+    unicode-bidi: plaintext;
+    direction: auto;
+    text-align: start;
+  }
+
+  .sources ul {
+    margin-top: 8px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .question-box {
+    margin-top: 20px;
+  }
+
+  .question-box textarea {
+    width: 100%;
+    background: #111827;
+    color: #ffffff;
+    border: 1px solid #5b6b75;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 15px;
+    line-height: 1.9;
+    unicode-bidi: plaintext;
+    direction: auto;
+    text-align: start;
+    font-family: Tahoma, Arial, sans-serif;
+  }
+
+  .question-box textarea::placeholder {
+    color: #9ca3af;
+  }
+
+  .send-btn {
+    margin-top: 12px;
+    background: #417690;
+    color: white !important;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .send-btn:hover {
+    background: #2f5f73;
+  }
+</style>
+
+<h1>Ask Documents</h1>
+
+<div class="ask-wrapper">
+  <div class="chat-sidebar">
+    <a href="{% url 'new_admin_chat' %}" class="new-chat-btn"> + New Chat </a>
+
+    <h3>Chats</h3>
+
+    {% for chat in chats %}
+    <div class="chat-row">
+      <a
+        href="{% url 'admin_ask_chat' chat.id %}"
+        class="chat-link {% if current_chat.id == chat.id %}active{% endif %}"
+        style="flex: 1"
+      >
+        {{ chat.title|default:"New Chat" }}
+      </a>
+
+      <a
+        href="{% url 'delete_admin_chat' chat.id %}"
+        class="delete-chat-btn"
+        onclick="return confirm('Delete this chat?');"
+      >
+        🗑
+      </a>
+    </div>
+    {% empty %}
+    <p>No chats yet.</p>
+    {% endfor %}
+  </div>
+
+  <div class="chat-main">
+    <div class="messages-box">
+      {% for message in messages %}
+      <div class="message">
+        <div class="user-message">
+          <strong>You:</strong><br />
+          <div class="message-content {{ message.question_direction }}-text">
+            {{ message.question }}
+          </div>
+        </div>
+
+        <div class="assistant-message">
+          <strong>Assistant:</strong><br />
+          <div class="message-content {{ message.answer_direction }}-text">
+            {{ message.answer }}
+          </div>
+
+          {% if message.sources %}
+          <div class="sources">
+            <strong>Sources / منابع:</strong>
+            <ul>
+              {% for source in message.sources %}
+              <li>
+                {{ source.title }} — chunk {{ source.chunk_id }} {% if source.source_type %} — {{ source.source_type }} {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="empty-message">No messages in this chat yet.</p>
+      {% endfor %}
+    </div>
+
+    <form method="post" class="question-box">
+      {% csrf_token %}
+
+      <textarea
+        name="question"
+        rows="4"
+        placeholder="Ask a question about your documents..."
+        required
+      ></textarea>
+
+      <button type="submit" class="send-btn">Send</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

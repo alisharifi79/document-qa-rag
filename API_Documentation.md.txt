@@ -1,0 +1,105 @@
+# API Documentation
+
+## Base URL
+
+```text
+http://localhost:8000
+```
+
+---
+
+# Ask Question
+
+## Endpoint
+
+```text
+POST /api/ask/
+```
+
+## Request
+
+```json
+{
+  "question": "What is the Silk Road?",
+  "debug": true
+}
+```
+
+### Parameters
+
+| Field    | Type    | Required | Description                         |
+| -------- | ------- | -------- | ----------------------------------- |
+| question | string  | Yes      | User question                       |
+| debug    | boolean | No       | Return sources and retrieved chunks |
+
+---
+
+## Response
+
+```json
+{
+  "question": "What is the Silk Road?",
+  "answer": "The Silk Road was an ancient trade route...",
+  "chat_id": 1,
+  "sources": [
+    {
+      "title": "Silk Road History",
+      "chunk_id": 0,
+      "source_type": "vector"
+    }
+  ]
+}
+```
+
+---
+
+## Debug Response
+
+```json
+{
+  "question": "What is the Silk Road?",
+  "answer": "...",
+  "chat_id": 1,
+  "retrieved_chunks": [
+    {
+      "content": "...",
+      "metadata": {
+        "title": "Silk Road History",
+        "chunk_id": 0
+      },
+      "source_type": "vector"
+    }
+  ],
+  "sources": [
+    {
+      "title": "Silk Road History",
+      "chunk_id": 0,
+      "source_type": "vector"
+    }
+  ]
+}
+```
+
+---
+
+## Features
+
+* Semantic Retrieval (FAISS)
+* Keyword Search (RapidFuzz)
+* Typo Correction
+* Source Attribution
+* Public/Private Document Filtering
+* Persian and English Support
+
+---
+
+## Sample Request
+
+```bash
+curl -X POST http://localhost:8000/api/ask/ \
+-H "Content-Type: application/json" \
+-d '{
+  "question":"What is the Silk Road?",
+  "debug": true
+}'
+```
